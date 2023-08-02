@@ -28,7 +28,7 @@ ATKProjectile::ATKProjectile()
 	ProjectileMovement->bShouldBounce = true;
 
 	// Die after 3 seconds by default
-	InitialLifeSpan = 3.0f;
+	InitialLifeSpan = 100.0f;
 }
 
 void ATKProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)

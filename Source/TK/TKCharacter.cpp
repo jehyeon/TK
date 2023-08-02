@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+ï»¿// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "TKCharacter.h"
 #include "TKProjectile.h"
@@ -11,6 +11,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "ArmCharacterAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "DrawDebugHelpers.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
@@ -38,7 +39,7 @@ ATKCharacter::ATKCharacter()
 	Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
 	Mesh1P->SetOnlyOwnerSee(true);
 	Mesh1P->SetupAttachment(FirstPersonCameraComponent);
-	// ÁÜ »óÅÂ¿Í ¿¡ÀÓ ÀÏÄ¡ (º°µµÀÇ Ä«¸Þ¶ó Ãß°¡ °í·Á)
+	// ì¤Œ ìƒíƒœì™€ ì—ìž„ ì¼ì¹˜ (ë³„ë„ì˜ ì¹´ë©”ë¼ ì¶”ê°€ ê³ ë ¤)
 	Mesh1P->SetRelativeLocation(FVector(0.f, -1.27f, -2.75f));
 	Mesh1P->SetRelativeRotation(FRotator(0.f, -89.2f, 2.f));
 	Mesh1P->bCastDynamicShadow = false;
@@ -53,11 +54,11 @@ ATKCharacter::ATKCharacter()
 	FP_Gun->SetupAttachment(RootComponent);
 
 	FP_MuzzleLocation = CreateDefaultSubobject<USceneComponent>(TEXT("MuzzleLocation"));
-	FP_MuzzleLocation->SetupAttachment(FP_Gun);
-	FP_MuzzleLocation->SetRelativeLocation(FVector(0.2f, 48.4f, -10.6f));
+	FP_MuzzleLocation->SetupAttachment(FirstPersonCameraComponent);
+	FP_MuzzleLocation->SetRelativeLocation(FVector(60.f, 1.f, -3.f));
 
 	// Default offset from the character location for projectiles to spawn
-	GunOffset = FVector(100.0f, 0.0f, 10.0f);
+	GunOffset = FVector(100.0f, 0.0f, -5.0f);
 
 }
 
@@ -84,7 +85,7 @@ void ATKCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputC
 	// set up gameplay key bindings
 	check(PlayerInputComponent);
 
-	// ÀÌº¥Æ® ¹ÙÀÎµå
+	// ì´ë²¤íŠ¸ ë°”ì¸ë“œ
 	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &ATKCharacter::OnZoom);
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ATKCharacter::OnReload);
 
@@ -140,6 +141,12 @@ void ATKCharacter::OnReload()
 
 void ATKCharacter::MoveForward(float Value)
 {
+	const FRotator SpawnRotation = GetControlRotation();
+	//DrawDebugLine(GetWorld(), 
+	//	FP_MuzzleLocation->GetComponentLocation(), 
+	//	FP_MuzzleLocation->GetComponentLocation() + SpawnRotation.RotateVector(GunOffset) * 1000,
+	//	FColor::Red, false, 0.1f, 0, 1.f);
+
 	//UE_LOG(LogTemp, Warning, TEXT("%f"), Movement->MaxWalkSpeed);
 	UpDownValue = Value;
 	AddMovementInput(GetActorForwardVector(), Value);
@@ -228,7 +235,7 @@ void ATKCharacter::Firing(float Value)
 			ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
 
 			// spawn the projectile at the muzzle
-			World->SpawnActor<ATKProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
+			World->SpawnActor<ATKProjectile>(ProjectileClass, SpawnLocation, SpawnRotation.RotateVector(GunOffset).Rotation(), ActorSpawnParams);
 		}
 	}
 
