@@ -27,7 +27,7 @@ class ATKCharacter : public ACharacter
 
 	/** Gun mesh: 1st person view (seen only by self) */
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
-	USkeletalMeshComponent* FP_Gun;
+	USkeletalMeshComponent* GunMesh;
 
 	/** Location on gun mesh where projectiles should spawn. */
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
@@ -101,6 +101,9 @@ public:
 
 	UPROPERTY()
 	bool IsRunning = false;
+public:
+	void InvisibleMagazine();
+	void VisibleMagazine();
 
 protected:
 	void OnZoom();

@@ -6,9 +6,6 @@
 #include "Animation/AnimInstance.h"
 #include "ArmCharacterAnimInstance.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class TK_API UArmCharacterAnimInstance : public UAnimInstance
 {
@@ -16,6 +13,12 @@ class TK_API UArmCharacterAnimInstance : public UAnimInstance
 
 public:
 	UArmCharacterAnimInstance();
+
+	UFUNCTION()
+	void AnimNotify_InvisibleMagazine();
+
+	UFUNCTION()
+	void AnimNotify_VisibleMagazine();
 
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 

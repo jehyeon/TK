@@ -15,6 +15,8 @@
 #include "Particles/ParticleSystem.h"
 #include "Engine/Classes/Kismet/GameplayStatics.h"
 #include "TKHUD.h"
+#include "Gun.h"
+#include "Components/SkinnedMeshComponent.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
@@ -49,12 +51,9 @@ ATKCharacter::ATKCharacter()
 	Mesh1P->CastShadow = false;
 
 	// Create a gun mesh component
-	FP_Gun = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FP_Gun"));
-	FP_Gun->SetOnlyOwnerSee(false);			// otherwise won't be visible in the multiplayer
-	FP_Gun->bCastDynamicShadow = false;
-	FP_Gun->CastShadow = false;
-	FP_Gun->SetupAttachment(Mesh1P, TEXT("SOCKET_Weapon"));
-	FP_Gun->SetupAttachment(RootComponent);
+	GunMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Gun"));
+	GunMesh->SetupAttachment(Mesh1P, TEXT("SOCKET_Weapon"));
+	GunMesh->SetupAttachment(RootComponent);
 
 	FP_MuzzleLocation = CreateDefaultSubobject<USceneComponent>(TEXT("MuzzleLocation"));
 	FP_MuzzleLocation->SetupAttachment(FirstPersonCameraComponent);
@@ -76,8 +75,8 @@ void ATKCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	//Attach gun mesh component to Skeleton, doing it here because the skeleton is not yet created in the constructor
-	FP_Gun->AttachToComponent(Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("SOCKET_Weapon"));
-	FP_Gun->SetRelativeTransform(FTransform(FVector(-1.25f, -3.f, -3.f)));
+	GunMesh->AttachToComponent(Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("SOCKET_Weapon"));
+	GunMesh->SetRelativeTransform(FTransform(FVector(-1.25f, -3.f, -3.f)));
 
 	Mesh1P->SetHiddenInGame(false, true);
 	AnimInstance = Cast<UArmCharacterAnimInstance>(Mesh1P->GetAnimInstance());
@@ -109,8 +108,22 @@ void ATKCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputC
 	PlayerInputComponent->BindAxis("Run", this, &ATKCharacter::Running);
 }
 
+void ATKCharacter::InvisibleMagazine()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Invisible"));
+	GunMesh->HideBone(GunMesh->GetBoneIndex(FName("b_gun_mag")), EPhysBodyOp::PBO_None);
+}
+
+void ATKCharacter::VisibleMagazine()
+{
+	UE_LOG(LogTemp, Warning, TEXT("visible"));
+	GunMesh->UnHideBone(GunMesh->GetBoneIndex(FName("b_gun_mag")));
+}
+
 void ATKCharacter::OnZoom()
 {
+	//GunMesh->HideBone(4, PBO_None);
+
 	if (IsRunning && !IsAiming)
 	{
 		return;
@@ -231,7 +244,7 @@ void ATKCharacter::Firing(float Value)
 
 	if (FireParticle)
 	{
-		GameStatic->SpawnEmitterAttached(FireParticle, FP_Gun, FName("Muzzle"));
+		GameStatic->SpawnEmitterAttached(FireParticle, GunMesh, FName("Muzzle"));
 	}
 
 	// try and fire a projectile

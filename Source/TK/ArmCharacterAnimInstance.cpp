@@ -17,6 +17,35 @@ UArmCharacterAnimInstance::UArmCharacterAnimInstance()
 	{
 		ReloadMontage = RM.Object;
 	}
+
+}
+
+void UArmCharacterAnimInstance::AnimNotify_InvisibleMagazine()
+{
+	// not good
+	auto Pawn = TryGetPawnOwner();
+	if (IsValid(Pawn))
+	{
+		auto Character = Cast<ATKCharacter>(Pawn);
+		if (Character)
+		{
+			Character->InvisibleMagazine();
+		}
+	}
+}
+
+void UArmCharacterAnimInstance::AnimNotify_VisibleMagazine()
+{
+	// not good
+	auto Pawn = TryGetPawnOwner();
+	if (IsValid(Pawn))
+	{
+		auto Character = Cast<ATKCharacter>(Pawn);
+		if (Character)
+		{
+			Character->VisibleMagazine();
+		}
+	}
 }
 
 void UArmCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
@@ -24,13 +53,11 @@ void UArmCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	Super::NativeUpdateAnimation(DeltaSeconds);
 
 	auto Pawn = TryGetPawnOwner();
-
 	if (IsValid(Pawn))
 	{
 		Speed = Pawn->GetVelocity().Size();
 
 		auto Character = Cast<ATKCharacter>(Pawn);
-
 		if (Character)
 		{
 			Horizontal = Character->LeftRightValue;
