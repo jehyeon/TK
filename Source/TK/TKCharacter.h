@@ -15,6 +15,7 @@ class UArmCharacterAnimInstance;
 class UGameplayStatics;
 class UParticleSytstem;
 class ATKProjectile;
+class UGunComponent;
 
 UCLASS(config=Game)
 class ATKCharacter : public ACharacter
@@ -26,8 +27,8 @@ class ATKCharacter : public ACharacter
 	USkeletalMeshComponent* Mesh1P;
 
 	/** Gun mesh: 1st person view (seen only by self) */
-	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
-	USkeletalMeshComponent* GunMesh;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
+	USkeletalMeshComponent* EquippedGun;
 
 	/** Location on gun mesh where projectiles should spawn. */
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
@@ -39,6 +40,12 @@ class ATKCharacter : public ACharacter
 	/** First person camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FirstPersonCameraComponent;
+
+	UPROPERTY(VisibleDefaultsOnly)
+	UGunComponent* PrimaryGun;
+
+	UPROPERTY(VisibleDefaultsOnly)
+	UGunComponent* SecondaryGun;
 
 public:
 	ATKCharacter();

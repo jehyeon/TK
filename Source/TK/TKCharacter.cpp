@@ -15,8 +15,8 @@
 #include "Particles/ParticleSystem.h"
 #include "Engine/Classes/Kismet/GameplayStatics.h"
 #include "TKHUD.h"
-#include "Gun.h"
 #include "Components/SkinnedMeshComponent.h"
+#include "GunComponent.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
@@ -50,10 +50,12 @@ ATKCharacter::ATKCharacter()
 	Mesh1P->bCastDynamicShadow = false;
 	Mesh1P->CastShadow = false;
 
-	// Create a gun mesh component
-	GunMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Gun"));
-	GunMesh->SetupAttachment(Mesh1P, TEXT("SOCKET_Weapon"));
-	GunMesh->SetupAttachment(RootComponent);
+	PrimaryGun = CreateDefaultSubobject<UGunComponent>(TEXT("PrimaryGun"));
+	SecondaryGun = CreateDefaultSubobject<UGunComponent>(TEXT("SecondaryGun"));
+
+	EquippedGun = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Gun"));
+	EquippedGun->SetupAttachment(Mesh1P, TEXT("SOCKET_Weapon"));
+	EquippedGun->SetupAttachment(RootComponent);
 
 	FP_MuzzleLocation = CreateDefaultSubobject<USceneComponent>(TEXT("MuzzleLocation"));
 	FP_MuzzleLocation->SetupAttachment(FirstPersonCameraComponent);
@@ -74,9 +76,18 @@ void ATKCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 
+	// temp
+	/*f (SM.Succeeded())
+	{*/
+		//UE_LOG(LogTemp, Warning, TEXT("로드 성공"));
+		//PrimaryGun->SetMesh(SM.Object);
+	//}
+	EquippedGun->SetSkeletalMesh(PrimaryGun->GetMesh());
+	/////////////////////////////////////////////////////
+	// 
 	//Attach gun mesh component to Skeleton, doing it here because the skeleton is not yet created in the constructor
-	GunMesh->AttachToComponent(Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("SOCKET_Weapon"));
-	GunMesh->SetRelativeTransform(FTransform(FVector(-1.25f, -3.f, -3.f)));
+	EquippedGun->AttachToComponent(Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("SOCKET_Weapon"));
+	EquippedGun->SetRelativeTransform(FTransform(FVector(-1.25f, -3.f, -3.f)));
 
 	Mesh1P->SetHiddenInGame(false, true);
 	AnimInstance = Cast<UArmCharacterAnimInstance>(Mesh1P->GetAnimInstance());
@@ -110,14 +121,12 @@ void ATKCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputC
 
 void ATKCharacter::InvisibleMagazine()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Invisible"));
-	GunMesh->HideBone(GunMesh->GetBoneIndex(FName("b_gun_mag")), EPhysBodyOp::PBO_None);
+	EquippedGun->HideBone(EquippedGun->GetBoneIndex(FName("b_gun_mag")), EPhysBodyOp::PBO_None);
 }
 
 void ATKCharacter::VisibleMagazine()
 {
-	UE_LOG(LogTemp, Warning, TEXT("visible"));
-	GunMesh->UnHideBone(GunMesh->GetBoneIndex(FName("b_gun_mag")));
+	EquippedGun->UnHideBone(EquippedGun->GetBoneIndex(FName("b_gun_mag")));
 }
 
 void ATKCharacter::OnZoom()
@@ -156,6 +165,9 @@ void ATKCharacter::OnReload()
 		{
 			OnZoom();
 		}
+
+		// temp
+		PrimaryGun->EquipMagazine();
 
 		AnimInstance->PlayReloadMontage();
 	}
@@ -239,12 +251,18 @@ void ATKCharacter::Firing(float Value)
 	{
 		return;
 	}
-	
+
+	// temp 탄창 확인
+	if (!PrimaryGun->Fire())
+	{
+		return;
+	}
+
 	NextFire = 0.f;
 
 	if (FireParticle)
 	{
-		GameStatic->SpawnEmitterAttached(FireParticle, GunMesh, FName("Muzzle"));
+		GameStatic->SpawnEmitterAttached(FireParticle, EquippedGun, FName("Muzzle"));
 	}
 
 	// try and fire a projectile
