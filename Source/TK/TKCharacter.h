@@ -12,6 +12,9 @@ class USceneComponent;
 class UCameraComponent;
 class UMotionControllerComponent;
 class UArmCharacterAnimInstance;
+class UGameplayStatics;
+class UParticleSytstem;
+class ATKProjectile;
 
 UCLASS(config=Game)
 class ATKCharacter : public ACharacter
@@ -58,11 +61,13 @@ public:
 
 	/** Projectile class to spawn */
 	UPROPERTY(EditDefaultsOnly, Category=Projectile)
-	TSubclassOf<class ATKProjectile> ProjectileClass;
+	TSubclassOf<ATKProjectile> ProjectileClass;
 
-	/** Whether to use motion controller location for aiming. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	uint8 bUsingMotionControllers : 1;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Effect)
+	UGameplayStatics* GameStatic;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Effect)
+	UParticleSystem* FireParticle;
 
 	// !!! TEMP
 
@@ -109,6 +114,8 @@ protected:
 	void Running(float Val);
 	
 	void SetSpeed(float NewSpeed);	// !!! TEMP
+
+	void ToggleCrossHair();
 
 protected:
 	// APawn interface

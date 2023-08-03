@@ -3,9 +3,17 @@
 #include "TKProjectile.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
+#include "Particles/ParticleSystem.h"
+#include "Engine/Classes/Kismet/GameplayStatics.h"
 
 ATKProjectile::ATKProjectile() 
 {
+	static ConstructorHelpers::FObjectFinder<UParticleSystem> HP(TEXT("ParticleSystem'/LPSPSample/LPSPSample/Art/Effects/PS_Impact.PS_Impact'"));
+	if (HP.Succeeded())
+	{
+		HitParticle = HP.Object;
+	}
+
 	// Use a sphere as a simple collision representation
 	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
 	CollisionComp->InitSphereRadius(5.0f);
@@ -33,11 +41,16 @@ ATKProjectile::ATKProjectile()
 
 void ATKProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	FVector inVector = Hit.TraceStart - Hit.TraceEnd;
+	
+	GameplayStatic->SpawnEmitterAtLocation(GetWorld(), HitParticle, Hit.Location, inVector.Rotation(), true, EPSCPoolMethod::None, true);
+
+	UE_LOG(LogTemp, Warning, TEXT("%f %f %f"), Hit.Location.X, Hit.Location.Y, Hit.Location.Z);
 	// Only add impulse and destroy projectile if we hit a physics
 	if ((OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr) && OtherComp->IsSimulatingPhysics())
 	{
 		OtherComp->AddImpulseAtLocation(GetVelocity() * 100.0f, GetActorLocation());
 
-		Destroy();
 	}
+	Destroy();
 }

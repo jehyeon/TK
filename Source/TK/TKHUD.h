@@ -16,10 +16,10 @@ public:
 
 	/** Primary draw call for the HUD */
 	virtual void DrawHUD() override;
-
+	void ToggleCrossHair();
 private:
 	/** Crosshair asset pointer */
 	class UTexture2D* CrosshairTex;
-
+	bool IsActivatedCrossHair = true;
 };
 

@@ -8,6 +8,8 @@
 
 class USphereComponent;
 class UProjectileMovementComponent;
+class UParticleSystem;
+class UGameplayStatics;
 
 UCLASS(config=Game)
 class ATKProjectile : public AActor
@@ -21,6 +23,13 @@ class ATKProjectile : public AActor
 	/** Projectile movement component */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	UProjectileMovementComponent* ProjectileMovement;
+
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Effect)
+	UGameplayStatics* GameplayStatic;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Effect)
+	UParticleSystem* HitParticle;
 
 public:
 	ATKProjectile();

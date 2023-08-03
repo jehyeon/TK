@@ -1,4 +1,4 @@
-﻿// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "TKCharacter.h"
 #include "TKProjectile.h"
@@ -8,10 +8,13 @@
 #include "Components/InputComponent.h"
 #include "GameFramework/InputSettings.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
-#include "Kismet/GameplayStatics.h"
+//#include "Kismet/GameplayStatics.h"
 #include "ArmCharacterAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "DrawDebugHelpers.h"
+#include "Particles/ParticleSystem.h"
+#include "Engine/Classes/Kismet/GameplayStatics.h"
+#include "TKHUD.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
@@ -60,6 +63,11 @@ ATKCharacter::ATKCharacter()
 	// Default offset from the character location for projectiles to spawn
 	GunOffset = FVector(100.0f, 0.0f, -5.0f);
 
+	static ConstructorHelpers::FObjectFinder<UParticleSystem> FP(TEXT("ParticleSystem'/LPSPSample/LPSPSample/Art/Effects/PS_MFlash.PS_MFlash'"));
+	if (FP.Succeeded())
+	{
+		FireParticle = FP.Object;
+	}
 }
 
 void ATKCharacter::BeginPlay()
@@ -108,6 +116,7 @@ void ATKCharacter::OnZoom()
 		return;
 	}
 
+	ToggleCrossHair();
 	// Default Toggle
 	if (IsAiming)
 	{
@@ -208,7 +217,7 @@ void ATKCharacter::Firing(float Value)
 {
 	NextFire += GetWorld()->GetDeltaSeconds();
 
-	if (Value < 1.f)
+	if (Value < 1.f || IsRunning)
 	{
 		return;
 	}
@@ -219,6 +228,11 @@ void ATKCharacter::Firing(float Value)
 	}
 	
 	NextFire = 0.f;
+
+	if (FireParticle)
+	{
+		GameStatic->SpawnEmitterAttached(FireParticle, FP_Gun, FName("Muzzle"));
+	}
 
 	// try and fire a projectile
 	if (ProjectileClass != nullptr)
@@ -248,4 +262,9 @@ void ATKCharacter::Firing(float Value)
 void ATKCharacter::SetSpeed(float NewSpeed)
 {
 	Movement->MaxWalkSpeed = NewSpeed;
+}
+
+void ATKCharacter::ToggleCrossHair()
+{
+	Cast<ATKHUD>(UGameplayStatics::GetPlayerController(GetOwner(), 0)->GetHUD())->ToggleCrossHair();
 }
