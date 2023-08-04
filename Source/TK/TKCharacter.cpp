@@ -17,6 +17,7 @@
 #include "TKHUD.h"
 #include "Components/SkinnedMeshComponent.h"
 #include "GunComponent.h"
+#include "MagazineComponent.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
@@ -119,6 +120,30 @@ void ATKCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputC
 	PlayerInputComponent->BindAxis("Run", this, &ATKCharacter::Running);
 }
 
+int ATKCharacter::GetEquippedCurrentAmmoCount()
+{
+	return temp;
+	// temp
+	if (!PrimaryGun->IsEquippedMagazine())
+	{
+		return -1;
+	}
+	
+	return PrimaryGun->GetMagazine()->GetCurrentAmmoCount();
+}
+
+int ATKCharacter::GetEquipeedMaxAmmoCount()
+{
+	return 30;
+	// temp
+	if (!PrimaryGun->IsEquippedMagazine())
+	{
+		return -1;
+	}
+
+	return PrimaryGun->GetMagazine()->GetMaxAmmoCount();
+}
+
 void ATKCharacter::InvisibleMagazine()
 {
 	EquippedGun->HideBone(EquippedGun->GetBoneIndex(FName("b_gun_mag")), EPhysBodyOp::PBO_None);
@@ -170,6 +195,7 @@ void ATKCharacter::OnReload()
 		PrimaryGun->EquipMagazine();
 
 		AnimInstance->PlayReloadMontage();
+		temp = 30;
 	}
 }
 
@@ -259,6 +285,7 @@ void ATKCharacter::Firing(float Value)
 	}
 
 	NextFire = 0.f;
+	temp--;
 
 	if (FireParticle)
 	{

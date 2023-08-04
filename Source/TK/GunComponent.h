@@ -35,6 +35,7 @@ public:
 
 	void SetMesh(USkeletalMesh* Mesh);
 	USkeletalMesh* GetMesh() { return GunMesh; }
+	UMagazineComponent* GetMagazine() { return Magazine; }
 
 	bool bIsEquippedMagazine;
 };

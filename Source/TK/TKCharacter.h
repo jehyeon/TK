@@ -95,7 +95,11 @@ public:
 
 	UPROPERTY()
 	float NextFire = 0.f;
+
 	////////////////////////////////////////
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	int temp = 30;
 
 	UPROPERTY()
 	float UpDownValue = 0.f;
@@ -108,6 +112,7 @@ public:
 
 	UPROPERTY()
 	bool IsRunning = false;
+
 public:
 	void InvisibleMagazine();
 	void VisibleMagazine();
@@ -140,5 +145,11 @@ public:
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
+
+	UFUNCTION(BlueprintCallable)
+	int GetEquippedCurrentAmmoCount();
+
+	UFUNCTION(BlueprintCallable)
+	int GetEquipeedMaxAmmoCount();
 };
 
