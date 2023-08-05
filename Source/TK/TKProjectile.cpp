@@ -45,7 +45,6 @@ void ATKProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPri
 	
 	GameplayStatic->SpawnEmitterAtLocation(GetWorld(), HitParticle, Hit.Location, inVector.Rotation(), true, EPSCPoolMethod::None, true);
 
-	UE_LOG(LogTemp, Warning, TEXT("%f %f %f"), Hit.Location.X, Hit.Location.Y, Hit.Location.Z);
 	// Only add impulse and destroy projectile if we hit a physics
 	if ((OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr) && OtherComp->IsSimulatingPhysics())
 	{

@@ -22,36 +22,72 @@ class ATKCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-	/** Pawn mesh: 1st person view (arms; seen only by self) */
-	UPROPERTY(VisibleDefaultsOnly, Category=Mesh)
-	USkeletalMeshComponent* Mesh1P;
-
-	/** Gun mesh: 1st person view (seen only by self) */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
-	USkeletalMeshComponent* EquippedGun;
-
-	/** Location on gun mesh where projectiles should spawn. */
-	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
-	USceneComponent* FP_MuzzleLocation;
-
-	UPROPERTY(VisibleDefaultsOnly, Category = Move)
-	UCharacterMovementComponent* Movement;
-
 	/** First person camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FirstPersonCameraComponent;
 
-	UPROPERTY(VisibleDefaultsOnly)
-	UGunComponent* PrimaryGun;
+	/** Pawn mesh: 1st person view (arms; seen only by self) */
+	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
+	USkeletalMeshComponent* Mesh1P;
+
+	/** Gun mesh: 1st person view (seen only by self) */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
+	USkeletalMeshComponent* WeaponMesh;
+
+	/** Location on gun mesh where projectiles should spawn. */
+	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
+	USceneComponent* ProjectileSpawnLocation;
 
 	UPROPERTY(VisibleDefaultsOnly)
-	UGunComponent* SecondaryGun;
+	TArray<UGunComponent*> Weapons;
+
+	UPROPERTY(VisibleDefaultsOnly, Category = Move)
+	UCharacterMovementComponent* Movement;
+
+	UPROPERTY(EditDefaultsOnly, Category = Projectile)
+	TSubclassOf<ATKProjectile> ProjectileClass;
+
+	UPROPERTY(VisibleAnywhere, Category = Effect)
+	UGameplayStatics* GameStatic;
+
+	UPROPERTY(VisibleAnywhere, Category = Effect)
+	UParticleSystem* FireParticle;
 
 public:
 	ATKCharacter();
 
 protected:
 	virtual void BeginPlay();
+
+public:
+	void VisibleMagazine();
+	void InvisibleMagazine();
+	void VisibleMesh1P();
+	void InvisibleMesh1P();
+
+	/** Returns Mesh1P subobject **/
+	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
+	/** Returns FirstPersonCameraComponent subobject **/
+	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
+
+protected:
+	void TakeWeapon(int Index);
+	void UntakeWeapon();
+	void OnZoom();
+	void OnReload();
+	void MoveForward(float Val);
+	void MoveRight(float Val);
+
+	void Firing(float Value);
+	void Running(float Val);
+
+	void SetSpeed(float NewSpeed);	// !!! TEMP
+
+	void ToggleCrossHair();
+
+	// APawn interface
+	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
+	// End of APawn interface
 
 public:
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
@@ -66,15 +102,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
 	FVector GunOffset;
 
-	/** Projectile class to spawn */
-	UPROPERTY(EditDefaultsOnly, Category=Projectile)
-	TSubclassOf<ATKProjectile> ProjectileClass;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Effect)
-	UGameplayStatics* GameStatic;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Effect)
-	UParticleSystem* FireParticle;
 
 	// !!! TEMP
 
@@ -108,48 +135,17 @@ public:
 	float LeftRightValue = 0.f;
 
 	UPROPERTY()
-	bool IsAiming = false;
+	bool IsAiming;
 
 	UPROPERTY()
-	bool IsRunning = false;
+	bool IsRunning;
 
-public:
-	void InvisibleMagazine();
-	void VisibleMagazine();
-
-protected:
-	void OnZoom();
-	void OnReload();
-	void MoveForward(float Val);
-	void MoveRight(float Val);
-	void TurnAtRate(float Rate);
-	void LookUpAtRate(float Rate);
-
-	void Firing(float Value);
-	void Running(float Val);
-	
-	void SetSpeed(float NewSpeed);	// !!! TEMP
-
-	void ToggleCrossHair();
-
-protected:
-	// APawn interface
-	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
-	// End of APawn interface
+	UPROPERTY()
+	bool IsTakeGun;
 
 private:
 	UArmCharacterAnimInstance* AnimInstance;
 
-public:
-	/** Returns Mesh1P subobject **/
-	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
-	/** Returns FirstPersonCameraComponent subobject **/
-	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
-
-	UFUNCTION(BlueprintCallable)
-	int GetEquippedCurrentAmmoCount();
-
-	UFUNCTION(BlueprintCallable)
-	int GetEquipeedMaxAmmoCount();
+	int EquippedWeaponIndex;
 };
 

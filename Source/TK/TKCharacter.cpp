@@ -8,7 +8,6 @@
 #include "Components/InputComponent.h"
 #include "GameFramework/InputSettings.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
-//#include "Kismet/GameplayStatics.h"
 #include "ArmCharacterAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "DrawDebugHelpers.h"
@@ -17,6 +16,7 @@
 #include "TKHUD.h"
 #include "Components/SkinnedMeshComponent.h"
 #include "GunComponent.h"
+#include "GunStatComponent.h"
 #include "MagazineComponent.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
@@ -35,13 +35,13 @@ ATKCharacter::ATKCharacter()
 	BaseTurnRate = 45.f;
 	BaseLookUpRate = 45.f;
 
-	// Create a CameraComponent	
+	// ### Camera Component 생성
 	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
 	FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
 	FirstPersonCameraComponent->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f)); // Position the camera
 	FirstPersonCameraComponent->bUsePawnControlRotation = true;
 
-	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
+	// ### Mesh Component 생성
 	Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
 	Mesh1P->SetOnlyOwnerSee(true);
 	Mesh1P->SetupAttachment(FirstPersonCameraComponent);
@@ -51,18 +51,23 @@ ATKCharacter::ATKCharacter()
 	Mesh1P->bCastDynamicShadow = false;
 	Mesh1P->CastShadow = false;
 
-	PrimaryGun = CreateDefaultSubobject<UGunComponent>(TEXT("PrimaryGun"));
-	SecondaryGun = CreateDefaultSubobject<UGunComponent>(TEXT("SecondaryGun"));
+	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Gun"));
+	WeaponMesh->SetupAttachment(Mesh1P, TEXT("SOCKET_Weapon"));
+	WeaponMesh->bCastDynamicShadow = false;
+	WeaponMesh->CastShadow = false;
 
-	EquippedGun = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Gun"));
-	EquippedGun->SetupAttachment(Mesh1P, TEXT("SOCKET_Weapon"));
-	EquippedGun->SetupAttachment(RootComponent);
+	// Projectile 스폰 위치 설정
+	ProjectileSpawnLocation = CreateDefaultSubobject<USceneComponent>(TEXT("MuzzleLocation"));
+	ProjectileSpawnLocation->SetupAttachment(FirstPersonCameraComponent);
+	ProjectileSpawnLocation->SetRelativeLocation(FVector(60.f, 1.f, -3.f));
 
-	FP_MuzzleLocation = CreateDefaultSubobject<USceneComponent>(TEXT("MuzzleLocation"));
-	FP_MuzzleLocation->SetupAttachment(FirstPersonCameraComponent);
-	FP_MuzzleLocation->SetRelativeLocation(FVector(60.f, 1.f, -3.f));
+	Weapons.Add(CreateDefaultSubobject<UGunComponent>(TEXT("PrimaryGun")));
+	Weapons.Add(CreateDefaultSubobject<UGunComponent>(TEXT("SecondaryGun")));
+	// temp 임시 착용
+	Weapons[0]->SetGun(1);
+	Weapons[1]->SetGun(2);
 
-	// Default offset from the character location for projectiles to spawn
+	// temp
 	GunOffset = FVector(100.0f, 0.0f, -5.0f);
 
 	static ConstructorHelpers::FObjectFinder<UParticleSystem> FP(TEXT("ParticleSystem'/LPSPSample/LPSPSample/Art/Effects/PS_MFlash.PS_MFlash'"));
@@ -70,6 +75,12 @@ ATKCharacter::ATKCharacter()
 	{
 		FireParticle = FP.Object;
 	}
+
+	EquippedWeaponIndex = -1;
+
+	IsAiming = false;
+	IsRunning = false;
+	IsTakeGun = false;
 }
 
 void ATKCharacter::BeginPlay()
@@ -77,23 +88,15 @@ void ATKCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 
-	// temp
-	/*f (SM.Succeeded())
-	{*/
-		//UE_LOG(LogTemp, Warning, TEXT("로드 성공"));
-		//PrimaryGun->SetMesh(SM.Object);
-	//}
-	EquippedGun->SetSkeletalMesh(PrimaryGun->GetMesh());
-	/////////////////////////////////////////////////////
-	// 
-	//Attach gun mesh component to Skeleton, doing it here because the skeleton is not yet created in the constructor
-	EquippedGun->AttachToComponent(Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("SOCKET_Weapon"));
-	EquippedGun->SetRelativeTransform(FTransform(FVector(-1.25f, -3.f, -3.f)));
+	WeaponMesh->AttachToComponent(Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("SOCKET_Weapon"));
+	WeaponMesh->SetRelativeTransform(FTransform(FVector(-1.25f, -3.f, -3.f)));
 
 	Mesh1P->SetHiddenInGame(false, true);
 	AnimInstance = Cast<UArmCharacterAnimInstance>(Mesh1P->GetAnimInstance());
 
 	Movement = Cast<ACharacter>(this)->GetCharacterMovement();
+
+	InvisibleMesh1P();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -108,55 +111,86 @@ void ATKCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputC
 	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &ATKCharacter::OnZoom);
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ATKCharacter::OnReload);
 
+	PlayerInputComponent->BindAction<FInputTakeWeaponDelegate>("TakePrimaryWeapon", IE_Pressed, this, &ATKCharacter::TakeWeapon, 0);
+	PlayerInputComponent->BindAction<FInputTakeWeaponDelegate>("TakeSecondaryWeapon", IE_Pressed, this, &ATKCharacter::TakeWeapon, 1);
+	PlayerInputComponent->BindAction("UnTakeWeapon", IE_Pressed, this, &ATKCharacter::UntakeWeapon);
+
 	PlayerInputComponent->BindAxis("MoveForward", this, &ATKCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ATKCharacter::MoveRight);
 
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("TurnRate", this, &ATKCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("LookUpRate", this, &ATKCharacter::LookUpAtRate);
 
 	PlayerInputComponent->BindAxis("Fire", this, &ATKCharacter::Firing);
 	PlayerInputComponent->BindAxis("Run", this, &ATKCharacter::Running);
 }
 
-int ATKCharacter::GetEquippedCurrentAmmoCount()
+void ATKCharacter::VisibleMagazine()
 {
-	return temp;
-	// temp
-	if (!PrimaryGun->IsEquippedMagazine())
-	{
-		return -1;
-	}
-	
-	return PrimaryGun->GetMagazine()->GetCurrentAmmoCount();
-}
-
-int ATKCharacter::GetEquipeedMaxAmmoCount()
-{
-	return 30;
-	// temp
-	if (!PrimaryGun->IsEquippedMagazine())
-	{
-		return -1;
-	}
-
-	return PrimaryGun->GetMagazine()->GetMaxAmmoCount();
+	WeaponMesh->UnHideBone(WeaponMesh->GetBoneIndex(FName("b_gun_mag")));
 }
 
 void ATKCharacter::InvisibleMagazine()
 {
-	EquippedGun->HideBone(EquippedGun->GetBoneIndex(FName("b_gun_mag")), EPhysBodyOp::PBO_None);
+	WeaponMesh->HideBone(WeaponMesh->GetBoneIndex(FName("b_gun_mag")), EPhysBodyOp::PBO_None);
 }
 
-void ATKCharacter::VisibleMagazine()
+void ATKCharacter::VisibleMesh1P()
 {
-	EquippedGun->UnHideBone(EquippedGun->GetBoneIndex(FName("b_gun_mag")));
+	Mesh1P->SetVisibility(true, true);
+}
+
+void ATKCharacter::InvisibleMesh1P()
+{
+	Mesh1P->SetVisibility(false, true);
+}
+
+void ATKCharacter::TakeWeapon(int Index)
+{
+	if (!Weapons[Index]->IsExist())
+	{
+		// 들고 있는 무기가 없는 경우
+		return;
+	}
+
+	if (Index == EquippedWeaponIndex)
+	{
+		return;
+	}
+
+	//if (EquippedWeaponIndex != -1)
+	//{
+	//	UntakeWeapon();
+	//}
+
+	IsTakeGun = true;
+	EquippedWeaponIndex = Index;
+	
+	WeaponMesh->SetSkeletalMesh(Weapons[Index]->GetMesh());
+
+
+	// 애니메이션 재생
+	AnimInstance->PlayUnholsterMontage();
+}
+
+void ATKCharacter::UntakeWeapon()
+{
+	if (!IsTakeGun)
+	{
+		return;
+	}
+
+	EquippedWeaponIndex = -1;
+	IsTakeGun = false;
+	AnimInstance->PlayHolsterMontage();
 }
 
 void ATKCharacter::OnZoom()
 {
-	//GunMesh->HideBone(4, PBO_None);
+	if (!IsTakeGun)
+	{
+		return;
+	}
 
 	if (IsRunning && !IsAiming)
 	{
@@ -184,6 +218,11 @@ void ATKCharacter::OnZoom()
 
 void ATKCharacter::OnReload()
 {
+	if (!IsTakeGun)
+	{
+		return;
+	}
+
 	if (AnimInstance)
 	{
 		if (IsAiming)
@@ -192,7 +231,7 @@ void ATKCharacter::OnReload()
 		}
 
 		// temp
-		PrimaryGun->EquipMagazine();
+		Weapons[EquippedWeaponIndex]->EquipMagazine();
 
 		AnimInstance->PlayReloadMontage();
 		temp = 30;
@@ -202,12 +241,7 @@ void ATKCharacter::OnReload()
 void ATKCharacter::MoveForward(float Value)
 {
 	const FRotator SpawnRotation = GetControlRotation();
-	//DrawDebugLine(GetWorld(), 
-	//	FP_MuzzleLocation->GetComponentLocation(), 
-	//	FP_MuzzleLocation->GetComponentLocation() + SpawnRotation.RotateVector(GunOffset) * 1000,
-	//	FColor::Red, false, 0.1f, 0, 1.f);
 
-	//UE_LOG(LogTemp, Warning, TEXT("%f"), Movement->MaxWalkSpeed);
 	UpDownValue = Value;
 	AddMovementInput(GetActorForwardVector(), Value);
 }
@@ -218,17 +252,6 @@ void ATKCharacter::MoveRight(float Value)
 	AddMovementInput(GetActorRightVector(), Value);
 }
 
-void ATKCharacter::TurnAtRate(float Rate)
-{
-	// calculate delta for this frame from the rate information
-	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
-}
-
-void ATKCharacter::LookUpAtRate(float Rate)
-{
-	// calculate delta for this frame from the rate information
-	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
-}
 
 void ATKCharacter::Running(float Val)
 {
@@ -268,18 +291,25 @@ void ATKCharacter::Firing(float Value)
 {
 	NextFire += GetWorld()->GetDeltaSeconds();
 
+	if (!IsTakeGun)
+	{
+		return;
+	}
+
 	if (Value < 1.f || IsRunning)
 	{
 		return;
 	}
 
-	if (NextFire < RateOfFire)
+	// temp
+	if (Weapons[EquippedWeaponIndex]->IsExist() 
+		&& NextFire < Weapons[EquippedWeaponIndex]->GetStat()->GetRateOfFire())
 	{
 		return;
 	}
 
 	// temp 탄창 확인
-	if (!PrimaryGun->Fire())
+	if (!Weapons[EquippedWeaponIndex]->Fire())
 	{
 		return;
 	}
@@ -289,7 +319,7 @@ void ATKCharacter::Firing(float Value)
 
 	if (FireParticle)
 	{
-		GameStatic->SpawnEmitterAttached(FireParticle, EquippedGun, FName("Muzzle"));
+		GameStatic->SpawnEmitterAttached(FireParticle, WeaponMesh, FName("Muzzle"));
 	}
 
 	// try and fire a projectile
@@ -300,7 +330,7 @@ void ATKCharacter::Firing(float Value)
 		{
 			const FRotator SpawnRotation = GetControlRotation();
 			// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
-			const FVector SpawnLocation = ((FP_MuzzleLocation != nullptr) ? FP_MuzzleLocation->GetComponentLocation() : GetActorLocation()) + SpawnRotation.RotateVector(GunOffset);
+			const FVector SpawnLocation = ((ProjectileSpawnLocation != nullptr) ? ProjectileSpawnLocation->GetComponentLocation() : GetActorLocation()) + SpawnRotation.RotateVector(GunOffset);
 
 			//Set Spawn Collision Handling Override
 			FActorSpawnParameters ActorSpawnParams;
