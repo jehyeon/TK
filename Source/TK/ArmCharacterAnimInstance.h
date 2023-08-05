@@ -20,13 +20,22 @@ public:
 	UFUNCTION()
 	void AnimNotify_VisibleMagazine();
 
+	UFUNCTION()
+	void AnimNotify_VisibleMesh1P();
+
+	UFUNCTION()
+	void AnimNotify_InvisibleMesh1P();
+
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
 	void PlayFireMontage();
 	void PlayReloadMontage();
+	void PlayHolsterMontage();
+	void PlayUnholsterMontage();
 
 	void SetAiming(bool AimingMode);
 	void SetRunning(bool RunningMode);
+	void SetHolster(bool HolsterMode);
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))
@@ -34,6 +43,9 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))
 	bool IsRunning;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))
+	bool IsHolster;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))
 	float Speed;
@@ -49,4 +61,10 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))
 	UAnimMontage* FireMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))
+	UAnimMontage* HolsterMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))
+	UAnimMontage* UnholsterMontage;
 };
