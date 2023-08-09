@@ -15,43 +15,45 @@ class UArmCharacterAnimInstance;
 class UGameplayStatics;
 class UParticleSytstem;
 class ATKProjectile;
-class UGunComponent;
+class UEquipmentComponent;
 
 UCLASS(config=Game)
 class ATKCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-	/** First person camera */
+	// Camera
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FirstPersonCameraComponent;
 
-	/** Pawn mesh: 1st person view (arms; seen only by self) */
+	// Mesh
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
 	USkeletalMeshComponent* Mesh1P;
 
-	/** Gun mesh: 1st person view (seen only by self) */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Mesh, meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* WeaponMesh;
 
-	/** Location on gun mesh where projectiles should spawn. */
-	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
-	USceneComponent* ProjectileSpawnLocation;
-
-	UPROPERTY(VisibleDefaultsOnly)
-	TArray<UGunComponent*> Weapons;
-
+	// Move Controller
 	UPROPERTY(VisibleDefaultsOnly, Category = Move)
 	UCharacterMovementComponent* Movement;
 
+	// Equipment
+	UPROPERTY(VisibleAnywhere, Category = Equiment)
+	UEquipmentComponent* Equipment;
+
+	// Projectile
 	UPROPERTY(EditDefaultsOnly, Category = Projectile)
 	TSubclassOf<ATKProjectile> ProjectileClass;
 
-	UPROPERTY(VisibleAnywhere, Category = Effect)
-	UGameplayStatics* GameStatic;
+	UPROPERTY(VisibleDefaultsOnly, Category = Projectile)
+	USceneComponent* ProjectileSpawnLocation;
 
+	// Effect
 	UPROPERTY(VisibleAnywhere, Category = Effect)
 	UParticleSystem* FireParticle;
+
+	UPROPERTY(VisibleAnywhere)
+	UGameplayStatics* GameStatic;
 
 public:
 	ATKCharacter();
@@ -83,6 +85,7 @@ protected:
 
 	void SetSpeed(float NewSpeed);	// !!! TEMP
 
+	// UI
 	void ToggleCrossHair();
 
 	// APawn interface
@@ -124,16 +127,15 @@ public:
 	float NextFire = 0.f;
 
 	////////////////////////////////////////
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	int temp = 30;
-
+	
+	// Move
 	UPROPERTY()
 	float UpDownValue = 0.f;
 
 	UPROPERTY()
 	float LeftRightValue = 0.f;
 
+	// State
 	UPROPERTY()
 	bool IsAiming;
 

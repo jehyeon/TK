@@ -15,7 +15,7 @@
 #include "Engine/Classes/Kismet/GameplayStatics.h"
 #include "TKHUD.h"
 #include "Components/SkinnedMeshComponent.h"
-#include "GunComponent.h"
+#include "EquipmentComponent.h"
 #include "GunStatComponent.h"
 #include "MagazineComponent.h"
 
@@ -35,13 +35,13 @@ ATKCharacter::ATKCharacter()
 	BaseTurnRate = 45.f;
 	BaseLookUpRate = 45.f;
 
-	// ### Camera Component 생성
+	// Camera Component 생성
 	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
 	FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
 	FirstPersonCameraComponent->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f)); // Position the camera
 	FirstPersonCameraComponent->bUsePawnControlRotation = true;
 
-	// ### Mesh Component 생성
+	// Mesh Component 생성
 	Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
 	Mesh1P->SetOnlyOwnerSee(true);
 	Mesh1P->SetupAttachment(FirstPersonCameraComponent);
@@ -56,16 +56,19 @@ ATKCharacter::ATKCharacter()
 	WeaponMesh->bCastDynamicShadow = false;
 	WeaponMesh->CastShadow = false;
 
+	Equipment = CreateDefaultSubobject<UEquipmentComponent>(TEXT("Equipment"));
+
 	// Projectile 스폰 위치 설정
 	ProjectileSpawnLocation = CreateDefaultSubobject<USceneComponent>(TEXT("MuzzleLocation"));
 	ProjectileSpawnLocation->SetupAttachment(FirstPersonCameraComponent);
 	ProjectileSpawnLocation->SetRelativeLocation(FVector(60.f, 1.f, -3.f));
 
-	Weapons.Add(CreateDefaultSubobject<UGunComponent>(TEXT("PrimaryGun")));
-	Weapons.Add(CreateDefaultSubobject<UGunComponent>(TEXT("SecondaryGun")));
-	// temp 임시 착용
-	Weapons[0]->SetGun(1);
-	Weapons[1]->SetGun(2);
+	// Update progress
+	//Weapons.Add(CreateDefaultSubobject<UGunComponent>(TEXT("PrimaryGun")));
+	//Weapons.Add(CreateDefaultSubobject<UGunComponent>(TEXT("SecondaryGun")));
+	//// temp 임시 착용
+	//Weapons[0]->SetGun(1);
+	//Weapons[1]->SetGun(2);
 
 	// temp
 	GunOffset = FVector(100.0f, 0.0f, -5.0f);
@@ -111,8 +114,9 @@ void ATKCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputC
 	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &ATKCharacter::OnZoom);
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ATKCharacter::OnReload);
 
-	PlayerInputComponent->BindAction<FInputTakeWeaponDelegate>("TakePrimaryWeapon", IE_Pressed, this, &ATKCharacter::TakeWeapon, 0);
-	PlayerInputComponent->BindAction<FInputTakeWeaponDelegate>("TakeSecondaryWeapon", IE_Pressed, this, &ATKCharacter::TakeWeapon, 1);
+	// Temp Disable
+	//PlayerInputComponent->BindAction<FInputTakeWeaponDelegate>("TakePrimaryWeapon", IE_Pressed, this, &ATKCharacter::TakeWeapon, 0);
+	//PlayerInputComponent->BindAction<FInputTakeWeaponDelegate>("TakeSecondaryWeapon", IE_Pressed, this, &ATKCharacter::TakeWeapon, 1);
 	PlayerInputComponent->BindAction("UnTakeWeapon", IE_Pressed, this, &ATKCharacter::UntakeWeapon);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ATKCharacter::MoveForward);
@@ -147,11 +151,12 @@ void ATKCharacter::InvisibleMesh1P()
 
 void ATKCharacter::TakeWeapon(int Index)
 {
-	if (!Weapons[Index]->IsExist())
-	{
-		// 들고 있는 무기가 없는 경우
-		return;
-	}
+	// update progress
+	//if (!Weapons[Index]->IsExist())
+	//{
+	//	// 들고 있는 무기가 없는 경우
+	//	return;
+	//}
 
 	if (Index == EquippedWeaponIndex)
 	{
@@ -166,7 +171,8 @@ void ATKCharacter::TakeWeapon(int Index)
 	IsTakeGun = true;
 	EquippedWeaponIndex = Index;
 	
-	WeaponMesh->SetSkeletalMesh(Weapons[Index]->GetMesh());
+	// update progress
+	//WeaponMesh->SetSkeletalMesh(Weapons[Index]->GetMesh());
 
 
 	// 애니메이션 재생
@@ -231,10 +237,12 @@ void ATKCharacter::OnReload()
 		}
 
 		// temp
-		Weapons[EquippedWeaponIndex]->EquipMagazine();
+		// update progress
+		//Weapons[EquippedWeaponIndex]->EquipMagazine();
 
 		AnimInstance->PlayReloadMontage();
-		temp = 30;
+		// update progress
+		//temp = 30;
 	}
 }
 
@@ -302,20 +310,22 @@ void ATKCharacter::Firing(float Value)
 	}
 
 	// temp
-	if (Weapons[EquippedWeaponIndex]->IsExist() 
-		&& NextFire < Weapons[EquippedWeaponIndex]->GetStat()->GetRateOfFire())
-	{
-		return;
-	}
+	// // update progress
+	//if (Weapons[EquippedWeaponIndex]->IsExist() 
+	//	&& NextFire < Weapons[EquippedWeaponIndex]->GetStat()->GetRateOfFire())
+	//{
+	//	return;
+	//}
 
 	// temp 탄창 확인
-	if (!Weapons[EquippedWeaponIndex]->Fire())
-	{
-		return;
-	}
+	// update progress
+	//if (!Weapons[EquippedWeaponIndex]->Fire())
+	//{
+	//	return;
+	//}
 
 	NextFire = 0.f;
-	temp--;
+	//temp--;
 
 	if (FireParticle)
 	{
