@@ -32,13 +32,20 @@ public:
 	// Sets default values for this component's properties
 	UEquipmentComponent();
 
-	void EquipWeapon(int index, UGunComponent* Weapon);
-
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
 public:
+	void EquipWeapon(int Index, UGunComponent* Weapon);
+	void TakeOnWeapon(int Index);
+	void TakeOffWeapon();
+	bool IsTakeWeapon();
+	bool IsTakeWeapon(int Index);
+	bool IsExistWeapon(int Index);
+
+	UGunComponent* GetEquippedWeapon();
+	USkeletalMesh* GetEquippedWeaponMesh();
 
 private:
 	int EquippedWeaponIndex;

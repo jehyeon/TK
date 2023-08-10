@@ -17,6 +17,8 @@ class UParticleSytstem;
 class ATKProjectile;
 class UEquipmentComponent;
 
+DECLARE_DELEGATE_OneParam(FInputTakeWeaponDelegate, int)
+
 UCLASS(config=Game)
 class ATKCharacter : public ACharacter
 {
@@ -73,8 +75,8 @@ public:
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 
 protected:
-	void TakeWeapon(int Index);
-	void UntakeWeapon();
+	void TakeOnWeapon(int Index);
+	void TakeOffWeapon();
 	void OnZoom();
 	void OnReload();
 	void MoveForward(float Val);
@@ -105,9 +107,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Gameplay)
 	FVector GunOffset;
 
-
-	// !!! TEMP
-
 	UPROPERTY()
 	float DefaultWalkSpeed = 600.f;
 
@@ -119,9 +118,6 @@ public:
 
 	UPROPERTY()
 	float WalkSpeed = 600.f;
-
-	UPROPERTY()
-	float RateOfFire = 0.13f;
 
 	UPROPERTY()
 	float NextFire = 0.f;
@@ -142,12 +138,7 @@ public:
 	UPROPERTY()
 	bool IsRunning;
 
-	UPROPERTY()
-	bool IsTakeGun;
-
 private:
 	UArmCharacterAnimInstance* AnimInstance;
-
-	int EquippedWeaponIndex;
 };
 
