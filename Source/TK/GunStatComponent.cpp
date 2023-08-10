@@ -35,8 +35,11 @@ void UGunStatComponent::SetGunStat(int GunID)
 	auto TKGameInstance = Cast<UTKGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if (TKGameInstance)
 	{
-		auto GunStat = TKGameInstance->GetGunData(GunID);
-		RateOfFire = GunStat->RateOfFire;
-		Damage = GunStat->Damage;
+		// Temp
+		//auto GunStat = TKGameInstance->GetGunData(GunID);
+		//RateOfFire = GunStat->RateOfFire;
+		//Damage = GunStat->Damage;
+		RateOfFire = 0.13f;
+		Damage = 10;
 	}
 }

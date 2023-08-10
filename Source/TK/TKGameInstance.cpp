@@ -2,22 +2,23 @@
 
 
 #include "TKGameInstance.h"
+#include "Item.h"
 
 UTKGameInstance::UTKGameInstance()
 {
-	static ConstructorHelpers::FObjectFinder<UDataTable> ITEM_DATA(TEXT("DataTable'/Game/Data/ItemTable.ItemTable'"));
+	//static ConstructorHelpers::FObjectFinder<UDataTable> ITEM_DATA(TEXT("DataTable'/Game/Data/ItemTable.ItemTable'"));
 
-	if (ITEM_DATA.Succeeded())
-	{
-		ItemDatas = ITEM_DATA.Object;
-	}
+	//if (ITEM_DATA.Succeeded())
+	//{
+	//	ItemDatas = ITEM_DATA.Object;
+	//}
 
-	static ConstructorHelpers::FObjectFinder<UDataTable> GUN_DATA(TEXT("DataTable'/Game/Data/GunTable.GunTable'"));
+	//static ConstructorHelpers::FObjectFinder<UDataTable> GUN_DATA(TEXT("DataTable'/Game/Data/GunTable.GunTable'"));
 
-	if (GUN_DATA.Succeeded())
-	{
-		GunDatas = GUN_DATA.Object;
-	}
+	//if (GUN_DATA.Succeeded())
+	//{
+	//	GunDatas = GUN_DATA.Object;
+	//}
 }
 
 void UTKGameInstance::Init()
@@ -25,12 +26,12 @@ void UTKGameInstance::Init()
 	Super::Init();
 }
 
-FItemData* UTKGameInstance::GetItemData(int ID)
-{
-	return ItemDatas->FindRow<FItemData>(*FString::FromInt(ID), TEXT(""));
-}
-
-FGunData* UTKGameInstance::GetGunData(int ID)
-{
-	return GunDatas->FindRow<FGunData>(*FString::FromInt(ID), TEXT(""));
-}
+//FItemData* UTKGameInstance::GetItemData(int ID)
+//{
+//	return ItemDatas->FindRow<FItemData>(*FString::FromInt(ID), TEXT(""));
+//}
+//
+//FGunData* UTKGameInstance::GetGunData(int ID)
+//{
+//	return GunDatas->FindRow<FGunData>(*FString::FromInt(ID), TEXT(""));
+//}
