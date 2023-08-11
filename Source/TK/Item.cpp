@@ -3,3 +3,7 @@
 
 #include "Item.h"
 
+FIntPoint& UItem::GetItemSize() const
+{
+	return FIntPoint(Data.WidthSize, Data.HeightSize);
+}

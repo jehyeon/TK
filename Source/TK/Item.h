@@ -56,4 +56,7 @@ protected:
 
 	UPROPERTY()
 	UTexture2D* Texture;
+
+public:
+	FIntPoint& GetItemSize() const;
 };
