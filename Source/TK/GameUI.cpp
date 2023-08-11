@@ -42,7 +42,7 @@ void UGameUI::ToggleInventory()
 	if (!IsActivateInventory)
 	{
 		Inventory->AddToViewport();
-		Inventory->ShowGrid();
+		//Inventory->ShowGrid();
 		ShowCursor();
 	}
 	else
