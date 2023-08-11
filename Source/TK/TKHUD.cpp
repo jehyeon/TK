@@ -14,7 +14,6 @@ ATKHUD::ATKHUD()
 	CrosshairTex = CrosshairTexObj.Object;
 }
 
-
 void ATKHUD::DrawHUD()
 {
 	Super::DrawHUD();
@@ -34,9 +33,29 @@ void ATKHUD::DrawHUD()
 		TileItem.BlendMode = SE_BLEND_Translucent;
 		Canvas->DrawItem(TileItem);
 	}
+
+	// Line 그리기
+	if (Lines.Num() > 0)
+	{
+		for (const FLine& Line : Lines)
+		{
+			DrawLine(Line.StartX, Line.StartY, Line.EndX, Line.EndY,
+					 Line.Color, Line.LineThickness);
+		}
+	}
 }
 
 void ATKHUD::ToggleCrossHair()
 {
 	IsActivatedCrossHair = !IsActivatedCrossHair;
+}
+
+void ATKHUD::AddDrawLine(const FLine& Line)
+{
+	Lines.Add(Line);
+}
+
+void ATKHUD::ClearDrawLine()
+{
+	Lines.Empty();
 }

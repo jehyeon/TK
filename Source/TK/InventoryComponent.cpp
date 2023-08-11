@@ -11,8 +11,8 @@ UInventoryComponent::UInventoryComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
 
-	ChestRigWidthSize = 4;
-	ChestRigHeightSize = 2;
+	ChestRigWidth = 6;
+	ChestRigHeight = 8;
 
 	PocketSize = 2;
 }

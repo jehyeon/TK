@@ -103,7 +103,7 @@ void ATKCharacter::BeginPlay()
 	GameUI = GameMode->GetGameUI();
 	if (GameUI)
 	{
-		GameUI->SetPlayerController(Cast<APlayerController>(GetController()));
+		GameUI->Init(this, Cast<APlayerController>(GetController()));
 	}
 }
 

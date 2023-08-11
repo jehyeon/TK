@@ -8,35 +8,48 @@
 
 class UInventoryWidget;
 class UAmmoCountWidget;
+class ATKCharacter;
+class ATKHUD;
 
 UCLASS()
 class TK_API UGameUI : public UUserWidget
 {
 	GENERATED_BODY()
 
+	UPROPERTY(VisibleAnywhere, Category = "UI", meta = (BindWidget))
+	UInventoryWidget* Inventory;
+
+	UPROPERTY(VisibleAnywhere, Category = "UI", meta = (BindWidget))
+	UAmmoCountWidget* AmmoCount;
+
+	UPROPERTY()
+	ATKCharacter* Character;
+
+	UPROPERTY()
+	APlayerController* PlayerController;
+
+	UPROPERTY()
+	ATKHUD* HUD;
+
 protected:
 	//void NativeOnInitialized() override;
 	void NativeConstruct() override;
 
 public:
-	void SetPlayerController(APlayerController* PlayerController);
+	void Init(ATKCharacter* C, APlayerController* PC);
 	void ToggleInventory();
 
 	void ShowCursor();
 	void HideCursor();
 
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI", meta = (BindWidget))
-	UInventoryWidget* Inventory;
+	void AddDrawLine(float StartX, float StartY, float EndX, float EndY, FColor Color, float LineThickness);
+	void ClearDrawLine();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI", meta = (BindWidget))
-	UAmmoCountWidget* AmmoCount;
+public:
 
 	UPROPERTY()
 	bool IsActivateInventory;
 
-	UPROPERTY()
-	APlayerController* PC;
 
 private:
 

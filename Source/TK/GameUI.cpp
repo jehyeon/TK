@@ -4,6 +4,8 @@
 #include "GameUI.h"
 #include "InventoryWidget.h"
 #include "AmmoCountWidget.h"
+#include "TKCharacter.h"
+#include "TKHUD.h"
 
 //void UGameUI::NativeOnInitialized()
 //{
@@ -17,13 +19,22 @@
 void UGameUI::NativeConstruct()
 {
 	Super::NativeConstruct();
+
 	IsActivateInventory = false;
 	Inventory->RemoveFromViewport();
+	//Inventory->Init()
 }
 
-void UGameUI::SetPlayerController(APlayerController* PlayerController)
+void UGameUI::Init(ATKCharacter* C, APlayerController* PC)
 {
-	PC = PlayerController;
+	Character = C;
+	PlayerController = PC;
+	if (PlayerController)
+	{
+		HUD = Cast<ATKHUD>(PlayerController->GetHUD());
+	}
+
+	Inventory->Init(this, C->GetInventoryComponent());
 }
 
 void UGameUI::ToggleInventory()
@@ -31,6 +42,7 @@ void UGameUI::ToggleInventory()
 	if (!IsActivateInventory)
 	{
 		Inventory->AddToViewport();
+		Inventory->ShowGrid();
 		ShowCursor();
 	}
 	else
@@ -44,20 +56,44 @@ void UGameUI::ToggleInventory()
 
 void UGameUI::ShowCursor()
 {
-	if (PC)
+	if (PlayerController)
 	{
-		PC->bShowMouseCursor = true;
-		PC->bEnableClickEvents = true;
-		PC->bEnableMouseOverEvents = true;
+		PlayerController->bShowMouseCursor = true;
+		PlayerController->bEnableClickEvents = true;
+		PlayerController->bEnableMouseOverEvents = true;
 	}
 }
 
 void UGameUI::HideCursor()
 {
-	if (PC)
+	if (PlayerController)
 	{
-		PC->bShowMouseCursor = false;
-		PC->bEnableClickEvents = false;
-		PC->bEnableMouseOverEvents = false;
+		PlayerController->bShowMouseCursor = false;
+		PlayerController->bEnableClickEvents = false;
+		PlayerController->bEnableMouseOverEvents = false;
+	}
+}
+
+void UGameUI::AddDrawLine(float StartX, float StartY, float EndX, float EndY, FColor Color, float LineThickness)
+{
+	if (HUD)
+	{
+		FLine Line;
+		Line.StartX = StartX;
+		Line.StartY = StartY;
+		Line.EndX = EndX;
+		Line.EndY = EndY;
+		Line.Color = Color;
+		Line.LineThickness = LineThickness;
+
+		HUD->AddDrawLine(Line);
+	}
+}
+
+void UGameUI::ClearDrawLine()
+{
+	if (HUD)
+	{
+		HUD->ClearDrawLine();
 	}
 }

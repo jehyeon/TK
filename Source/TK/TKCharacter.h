@@ -84,6 +84,8 @@ public:
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 
+	UInventoryComponent* GetInventoryComponent() const { return Inventory; }
+
 protected:
 	void TakeOnWeapon(int Index);
 	void TakeOffWeapon();

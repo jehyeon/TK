@@ -23,14 +23,16 @@ protected:
 
 public:
 	void CreateInventorySlot();
+	int GetChestRigWidth() const { return ChestRigWidth; }
+	int GetChestRigHeight() const { return ChestRigHeight; }
 
 private:
 	// Chest rig
 	UPROPERTY()
-	int ChestRigWidthSize;
+	int ChestRigWidth;
 
 	UPROPERTY()
-	int ChestRigHeightSize;
+	int ChestRigHeight;
 
 	UPROPERTY()
 	TArray<UItem*> ChestRig;
