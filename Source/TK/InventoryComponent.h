@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "InventoryComponent.generated.h"
 
+class UItem;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class TK_API UInventoryComponent : public UActorComponent
@@ -20,9 +21,24 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+public:
+	void CreateInventorySlot();
 
-		
+private:
+	// Chest rig
+	UPROPERTY()
+	int ChestRigWidthSize;
+
+	UPROPERTY()
+	int ChestRigHeightSize;
+
+	UPROPERTY()
+	TArray<UItem*> ChestRig;
+
+	// Pocket
+	UPROPERTY()
+	int PocketSize;
+
+	UPROPERTY()
+	TArray<UItem*> Pocket;
 };

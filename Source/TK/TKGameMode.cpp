@@ -24,8 +24,19 @@ ATKGameMode::ATKGameMode()
 		CurrentWidget = CreateWidget(GetWorld(), HUD_Class);
 		if (CurrentWidget)
 		{
+			GameUI = Cast<UGameUI>(CurrentWidget);
+
 			CurrentWidget->AddToViewport();
-			// CurrentWidget->RemoveFromViewport();
 		}
 	}
+}
+
+UGameUI* ATKGameMode::GetGameUI()
+{
+	if (GameUI)
+	{
+		return GameUI;
+	}
+
+	return nullptr;
 }

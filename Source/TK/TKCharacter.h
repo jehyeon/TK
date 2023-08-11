@@ -16,6 +16,8 @@ class UGameplayStatics;
 class UParticleSytstem;
 class ATKProjectile;
 class UEquipmentComponent;
+class UInventoryComponent;
+class UGameUI;
 
 DECLARE_DELEGATE_OneParam(FInputTakeWeaponDelegate, int)
 
@@ -43,6 +45,10 @@ class ATKCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, Category = Equiment)
 	UEquipmentComponent* Equipment;
 
+	// Inventory
+	UPROPERTY(VisibleAnywhere, Category = Inventory)
+	UInventoryComponent* Inventory;
+
 	// Projectile
 	UPROPERTY(EditDefaultsOnly, Category = Projectile)
 	TSubclassOf<ATKProjectile> ProjectileClass;
@@ -56,6 +62,10 @@ class ATKCharacter : public ACharacter
 
 	UPROPERTY(VisibleAnywhere)
 	UGameplayStatics* GameStatic;
+
+	// UI
+	UPROPERTY()
+	UGameUI* GameUI;
 
 public:
 	ATKCharacter();
@@ -89,6 +99,7 @@ protected:
 
 	// UI
 	void ToggleCrossHair();
+	void ToggleInventory();
 
 	// APawn interface
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
@@ -139,6 +150,7 @@ public:
 	bool IsRunning;
 
 private:
+	UPROPERTY()
 	UArmCharacterAnimInstance* AnimInstance;
 };
 

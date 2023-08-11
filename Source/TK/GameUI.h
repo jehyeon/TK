@@ -14,7 +14,9 @@ class TK_API UGameUI : public UUserWidget
 {
 	GENERATED_BODY()
 
-	void NativeOnInitialized() override;
+protected:
+	//void NativeOnInitialized() override;
+	void NativeConstruct() override;
 
 public:
 	void Init();
@@ -26,6 +28,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI", meta = (BindWidget))
 	UAmmoCountWidget* AmmoCount;
+
+	UPROPERTY()
+	bool IsActivateInventory;
 
 private:
 

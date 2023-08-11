@@ -17,8 +17,11 @@
 #include "Components/SkinnedMeshComponent.h"
 #include "GunComponent.h"
 #include "EquipmentComponent.h"
+#include "InventoryComponent.h"
 #include "GunStatComponent.h"
 #include "MagazineComponent.h"
+#include "TKGameMode.h"
+#include "GameUI.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
@@ -58,6 +61,7 @@ ATKCharacter::ATKCharacter()
 	WeaponMesh->CastShadow = false;
 
 	Equipment = CreateDefaultSubobject<UEquipmentComponent>(TEXT("Equipment"));
+	Inventory = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory"));
 
 	// Projectile 스폰 위치 설정
 	ProjectileSpawnLocation = CreateDefaultSubobject<USceneComponent>(TEXT("MuzzleLocation"));
@@ -93,6 +97,10 @@ void ATKCharacter::BeginPlay()
 	Movement = Cast<ACharacter>(this)->GetCharacterMovement();
 
 	InvisibleMesh1P();
+
+	// UI
+	ATKGameMode* GameMode = Cast<ATKGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	GameUI = GameMode->GetGameUI();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -107,7 +115,6 @@ void ATKCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputC
 	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &ATKCharacter::OnZoom);
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ATKCharacter::OnReload);
 
-	// Temp Disable
 	PlayerInputComponent->BindAction<FInputTakeWeaponDelegate>("TakePrimaryWeapon", IE_Pressed, this, &ATKCharacter::TakeOnWeapon, 0);
 	PlayerInputComponent->BindAction<FInputTakeWeaponDelegate>("TakeSecondaryWeapon", IE_Pressed, this, &ATKCharacter::TakeOnWeapon, 1);
 	PlayerInputComponent->BindAction("UnTakeWeapon", IE_Pressed, this, &ATKCharacter::TakeOffWeapon);
@@ -120,6 +127,8 @@ void ATKCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputC
 
 	PlayerInputComponent->BindAxis("Fire", this, &ATKCharacter::Firing);
 	PlayerInputComponent->BindAxis("Run", this, &ATKCharacter::Running);
+
+	PlayerInputComponent->BindAction("ToggleInventory", IE_Pressed, this, &ATKCharacter::ToggleInventory);
 }
 
 void ATKCharacter::VisibleMagazine()
@@ -344,4 +353,12 @@ void ATKCharacter::SetSpeed(float NewSpeed)
 void ATKCharacter::ToggleCrossHair()
 {
 	Cast<ATKHUD>(UGameplayStatics::GetPlayerController(GetOwner(), 0)->GetHUD())->ToggleCrossHair();
+}
+
+void ATKCharacter::ToggleInventory()
+{
+	if (GameUI)
+	{
+		GameUI->ToggleInventory();
+	}
 }

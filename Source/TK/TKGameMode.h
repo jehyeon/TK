@@ -6,6 +6,8 @@
 #include "GameFramework/GameModeBase.h"
 #include "TKGameMode.generated.h"
 
+class UGameUI;
+
 UCLASS(minimalapi)
 class ATKGameMode : public AGameModeBase
 {
@@ -15,11 +17,17 @@ public:
 	ATKGameMode();
 
 public:
+	UGameUI* GetGameUI();
+
+public:
 	UPROPERTY()
 	TSubclassOf<UUserWidget> HUD_Class;
 
 	UPROPERTY()
 	UUserWidget* CurrentWidget;
+
+	UPROPERTY()
+	UGameUI* GameUI;
 };
 
 

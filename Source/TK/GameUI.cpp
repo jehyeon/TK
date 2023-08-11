@@ -5,9 +5,20 @@
 #include "InventoryWidget.h"
 #include "AmmoCountWidget.h"
 
-void UGameUI::NativeOnInitialized()
+//void UGameUI::NativeOnInitialized()
+//{
+//	Super::NativeOnInitialized();
+//
+//
+//	IsActivateInventory = false;
+//	Inventory->RemoveFromViewport();
+//}
+
+void UGameUI::NativeConstruct()
 {
-	Super::NativeOnInitialized();
+	Super::NativeConstruct();
+	IsActivateInventory = false;
+	Inventory->RemoveFromViewport();
 }
 
 void UGameUI::Init()
@@ -16,4 +27,14 @@ void UGameUI::Init()
 
 void UGameUI::ToggleInventory()
 {
+	if (!IsActivateInventory)
+	{
+		Inventory->AddToViewport();
+	}
+	else
+	{
+		Inventory->RemoveFromViewport();
+	}
+
+	IsActivateInventory = !IsActivateInventory;
 }
