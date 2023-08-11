@@ -21,8 +21,9 @@ void UGameUI::NativeConstruct()
 	Inventory->RemoveFromViewport();
 }
 
-void UGameUI::Init()
+void UGameUI::SetPlayerController(APlayerController* PlayerController)
 {
+	PC = PlayerController;
 }
 
 void UGameUI::ToggleInventory()
@@ -30,11 +31,33 @@ void UGameUI::ToggleInventory()
 	if (!IsActivateInventory)
 	{
 		Inventory->AddToViewport();
+		ShowCursor();
 	}
 	else
 	{
 		Inventory->RemoveFromViewport();
+		HideCursor();
 	}
 
 	IsActivateInventory = !IsActivateInventory;
+}
+
+void UGameUI::ShowCursor()
+{
+	if (PC)
+	{
+		PC->bShowMouseCursor = true;
+		PC->bEnableClickEvents = true;
+		PC->bEnableMouseOverEvents = true;
+	}
+}
+
+void UGameUI::HideCursor()
+{
+	if (PC)
+	{
+		PC->bShowMouseCursor = false;
+		PC->bEnableClickEvents = false;
+		PC->bEnableMouseOverEvents = false;
+	}
 }

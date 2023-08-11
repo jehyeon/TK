@@ -101,6 +101,10 @@ void ATKCharacter::BeginPlay()
 	// UI
 	ATKGameMode* GameMode = Cast<ATKGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	GameUI = GameMode->GetGameUI();
+	if (GameUI)
+	{
+		GameUI->SetPlayerController(Cast<APlayerController>(GetController()));
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////

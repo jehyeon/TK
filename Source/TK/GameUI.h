@@ -19,8 +19,11 @@ protected:
 	void NativeConstruct() override;
 
 public:
-	void Init();
+	void SetPlayerController(APlayerController* PlayerController);
 	void ToggleInventory();
+
+	void ShowCursor();
+	void HideCursor();
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI", meta = (BindWidget))
@@ -31,6 +34,9 @@ public:
 
 	UPROPERTY()
 	bool IsActivateInventory;
+
+	UPROPERTY()
+	APlayerController* PC;
 
 private:
 
