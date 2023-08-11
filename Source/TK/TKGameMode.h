@@ -13,6 +13,13 @@ class ATKGameMode : public AGameModeBase
 
 public:
 	ATKGameMode();
+
+public:
+	UPROPERTY()
+	TSubclassOf<UUserWidget> HUD_Class;
+
+	UPROPERTY()
+	UUserWidget* CurrentWidget;
 };
 
 

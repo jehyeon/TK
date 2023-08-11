@@ -4,6 +4,7 @@
 #include "TKHUD.h"
 #include "TKCharacter.h"
 #include "UObject/ConstructorHelpers.h"
+#include "GameUI.h"
 
 ATKGameMode::ATKGameMode()
 	: Super()
@@ -14,4 +15,17 @@ ATKGameMode::ATKGameMode()
 
 	// use our custom HUD class
 	HUDClass = ATKHUD::StaticClass();
+
+	static ConstructorHelpers::FClassFinder<UGameUI> GAME_UI(TEXT("WidgetBlueprint'/Game/UI/WBP_GameUI.WBP_GameUI_C'"));
+	if (GAME_UI.Succeeded())
+	{
+		HUD_Class = GAME_UI.Class;
+
+		CurrentWidget = CreateWidget(GetWorld(), HUD_Class);
+		if (CurrentWidget)
+		{
+			CurrentWidget->AddToViewport();
+			// CurrentWidget->RemoveFromViewport();
+		}
+	}
 }
